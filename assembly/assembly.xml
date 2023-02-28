@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<id>tgz</id>
+	<!-- 应用名-run（压缩包解压后的目录名） -->
+	<baseDirectory>lindorm-tsdb-client</baseDirectory>
+	<formats>
+		<!-- 压缩包的格式,一律为tar.gz -->
+		<format>tar.gz</format>
+	</formats>
+	<fileSets>
+		<fileSet>
+			<!-- 应用jar生成的目录 -->
+			<directory>${project.build.directory}</directory>
+			<!-- 输出的目录,此处为空即可 -->
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>*.jar</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+	<dependencySets>
+		<dependencySet>
+			<useProjectArtifact>false</useProjectArtifact>
+			<!-- 运行时依赖统一放在lib目录下 -->
+			<outputDirectory>lib</outputDirectory>
+			<scope>runtime</scope>
+		</dependencySet>
+	</dependencySets>
+</assembly>

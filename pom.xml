@@ -28,8 +28,8 @@
 	</scm>
 	<developers>
 		<developer>
-			<name>xxx</name>
-			<email>xxx</email>
+			<name>Zou Yujie</name>
+			<email>yunxing.zyj@alibaba-inc.com</email>
 			<organization>Aliyun</organization>
 			<organizationUrl>http://www.aliyun.com</organizationUrl>
 		</developer>
@@ -307,56 +307,14 @@
 			</plugin>
 		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>alibaba</id>
-			<repositories>
-				<repository>
-					<id>alibaba-releases</id>
-					<url>http://mvnrepo.alibaba-inc.com/mvn/repository</url>
-					<releases>
-						<enabled>true</enabled>
-					</releases>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-				<repository>
-					<id>alibaba-snapshots</id>
-					<url>http://mvnrepo.alibaba-inc.com/mvn/repository</url>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-				</repository>
-			</repositories>
-			<distributionManagement>
-				<repository>
-					<id>releases</id>
-					<name>taobao mirror</name>
-					<url>http://mvnrepo.alibaba-inc.com/mvn/releases</url>
-				</repository>
-				<snapshotRepository>
-					<id>snapshots</id>
-					<name>taobao mirror snapshots</name>
-					<url>http://mvnrepo.alibaba-inc.com/mvn/snapshots</url>
-				</snapshotRepository>
-			</distributionManagement>
-		</profile>
-		<profile>
-			<id>sonatype</id>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-				<repository>
-					<id>ossrh</id>
-					<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-			</distributionManagement>
-		</profile>
-	</profiles>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

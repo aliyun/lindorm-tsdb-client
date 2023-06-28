@@ -289,6 +289,10 @@
 							</artifactSet>
 							<relocations>
 								<relocation>
+									<pattern>com.google.gson</pattern>
+									<shadedPattern>${shaded.package}.gson</shadedPattern>
+								</relocation>
+								<relocation>
 									<pattern>retrofit2</pattern>
 									<shadedPattern>${shaded.package}.retrofit2</shadedPattern>
 								</relocation>

@@ -15,7 +15,7 @@ Maven dependency:
 <dependency>
   <groupId>com.aliyun.lindorm</groupId>
   <artifactId>lindorm-tsdb-client</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
 </dependency>
 ```
 

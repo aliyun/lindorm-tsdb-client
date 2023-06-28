@@ -5,7 +5,7 @@
 
 	<groupId>com.aliyun.lindorm</groupId>
 	<artifactId>lindorm-tsdb-client</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<packaging>jar</packaging>
 
 	<name>lindorm-tsdb-client</name>
@@ -288,6 +288,10 @@
 								</excludes>
 							</artifactSet>
 							<relocations>
+								<relocation>
+									<pattern>com.google.gson</pattern>
+									<shadedPattern>${shaded.package}.gson</shadedPattern>
+								</relocation>
 								<relocation>
 									<pattern>retrofit2</pattern>
 									<shadedPattern>${shaded.package}.retrofit2</shadedPattern>

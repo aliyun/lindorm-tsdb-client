@@ -45,6 +45,7 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,7 @@ import java.util.function.Consumer;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
@@ -127,10 +129,11 @@ public class LindormTSDBClientTest {
         ClientOptions options = ClientOptions.newBuilder(url).setUsername("tsdb").setPassword("enxU^gPq#gUqEyM").build();
         LindormTSDBClient lindormTSDBClient = LindormTSDBFactory.connect(options);
 
-        //lindormTSDBClient.execute("CREATE DATABASE demo");
+        lindormTSDBClient.execute("drop database if exists demo");
+        lindormTSDBClient.execute("CREATE DATABASE demo");
         //lindormTSDBClient.execute("demo","drop table sensor");
         Thread.sleep(1000L);
-        lindormTSDBClient.execute("demo","CREATE TABLE sensor (device_id VARCHAR TAG,region VARCHAR TAG,time BIGINT,temperature DOUBLE,humidity LONG, fielda BIGINT,PRIMARY KEY(device_id))");
+        lindormTSDBClient.execute("demo","CREATE TABLE sensor (device_id VARCHAR TAG,region VARCHAR TAG,time BIGINT,temperature DOUBLE,humidity LONG, fielda BIGINT, PRIMARY KEY(device_id))");
 
         // 3.写入数据
         int numRecords = 10000;
@@ -146,7 +149,7 @@ public class LindormTSDBClientTest {
                         .tag("region", "north-cn")
                         //                        .tag("device_id", "F07A" + String.format("%06d", i))
                         //                        .tag("region", i % 4 == 0 ? "north-cn" : i % 4 == 1 ? "south-cn" : i % 4 == 2 ? "east-cn" : "west-cn")
-                        .addField("temperature", 12.1 + j)
+                        .addField("temperature", 1.0)
                         .addField("humidity", 10L)
                         .addField("fielda", 10L)
                         .build();
@@ -221,15 +224,23 @@ public class LindormTSDBClientTest {
             QueryResult result = null;
             // 查询结果使用分批的方式返回，默认每批1000行
             // 当resultSet的next()方法返回为null，表示已经读取完所有的查询结果
+            int indexTemprature = 3, indexHumidity = 4, indexFielda = 5;
             while ((result = resultSet.next()) != null) {
                 List<String> columns = result.getColumns();
                 System.out.println("columns: " + columns);
                 List<String> metadata = result.getMetadata();
                 System.out.println("metadata: " + metadata);
+                //check temperature, humidity, fielda;
+                Assert.assertEquals(metadata.get(indexTemprature), "DOUBLE");
+                Assert.assertEquals(metadata.get(indexHumidity), "BIGINT");
+                Assert.assertEquals(metadata.get(indexFielda), "BIGINT");
                 List<List<Object>> rows = result.getRows();
                 for (int i = 0, size = rows.size(); i < size; i++) {
                     List<Object> row = rows.get(i);
                     System.out.println("row #" + i + " : " + row);
+                    Assert.assertTrue(row.get(indexTemprature) instanceof Double);
+                    Assert.assertTrue(row.get(indexHumidity) instanceof Long);
+                    Assert.assertTrue(row.get(indexFielda) instanceof Long);
                 }
             }
         } finally {

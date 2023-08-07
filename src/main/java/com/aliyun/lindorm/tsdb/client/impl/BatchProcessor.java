@@ -68,8 +68,11 @@ public class BatchProcessor {
         this.appendsInProgress = new AtomicInteger(0);
     }
 
-
     public CompletableFuture<WriteResult> append(String database, Record record, long nowMs) {
+        return append(database, record, nowMs, null);
+    }
+
+    public CompletableFuture<WriteResult> append(String database, Record record, long nowMs, List<String> cluterIdList) {
         verify();
         this.appendsInProgress.incrementAndGet();
         BatchQueue dp = getOrCreateBatchQueue(database);
@@ -101,7 +104,7 @@ public class BatchProcessor {
                 }
             }
             // TODO pool batch points
-            RecordBatch recordBatch = new RecordBatch(database, batchSize);
+            RecordBatch recordBatch = new RecordBatch(database, batchSize, cluterIdList);
             future = Objects.requireNonNull(recordBatch.tryAppend(record, nowMs));
             dp.addLast(recordBatch);
             return future;
@@ -111,8 +114,11 @@ public class BatchProcessor {
         }
     }
 
-
     public CompletableFuture<WriteResult> append(String database, List<Record> records, long nowMs) {
+        return append(database, records, nowMs, null);
+    }
+
+    public CompletableFuture<WriteResult> append(String database, List<Record> records, long nowMs, List<String> clusterIdList) {
         verify();
         BatchQueue dp = getOrCreateBatchQueue(database);
         int numAppendPoints = records.size();
@@ -155,7 +161,7 @@ public class BatchProcessor {
                     }
                 }
                 // TODO pool batch records
-                RecordBatch recordBatch = new RecordBatch(database, batchSize);
+                RecordBatch recordBatch = new RecordBatch(database, batchSize, clusterIdList);
                 CompletableFuture<WriteResult> appendedFuture = Objects.requireNonNull(recordBatch.tryAppend(pointIt, nowMs));
                 result = result.thenCombine(appendedFuture, (b, r) -> new WriteResult(b.isSuccessful() && r.isSuccessful()));
                 dp.addLast(recordBatch);

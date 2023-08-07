@@ -44,7 +44,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -196,6 +199,15 @@ public class LindormTSDBClientImplTest0 {
     }
 
     @Test
+    public void testWriteSyncPointsWithClusterIdList() {
+        ClientOptions options = ClientOptions.newBuilder(URL).build();
+        LindormTSDBClientImpl client = new LindormTSDBClientImpl(options);
+        List<String> clusterIdList = new ArrayList<>(Arrays.asList("123", "tsdb-1"));
+        WriteResult writeResult = client.writeSync(TestKit.createRecords(5), clusterIdList);
+        assertTrue(writeResult.isSuccessful());
+    }
+
+    @Test
     public void testWriteSyncPointsWithEmptyParams() {
         ClientOptions options = ClientOptions.newBuilder(URL).build();
         LindormTSDBClientImpl client = new LindormTSDBClientImpl(options);
@@ -220,6 +232,27 @@ public class LindormTSDBClientImplTest0 {
         LindormTSDBClientImpl client = new LindormTSDBClientImpl(options);
         String database = "demo";
         CompletableFuture<WriteResult> future = client.write(database, TestKit.createRecords(5));
+        assertTrue(future.join().isSuccessful());
+    }
+
+    @Test
+    public void testWritePointWithDBAndClusterIdList() {
+        ClientOptions options = ClientOptions.newBuilder(URL).build();
+        LindormTSDBClientImpl client = new LindormTSDBClientImpl(options);
+        String database = "demo";
+        List<String> clusterIdList = new ArrayList<>(Arrays.asList("123", "tsdb-1"));
+        CompletableFuture<WriteResult> future = client.write(database, TestKit.createRecord(), clusterIdList);
+        assertTrue(future.join().isSuccessful());
+    }
+
+    @Test
+    public void testWritePointsWithDBAndClusterIdList() {
+        ClientOptions options = ClientOptions.newBuilder(URL).build();
+        LindormTSDBClientImpl client = new LindormTSDBClientImpl(options);
+        String database = "demo";
+        List<String> clusterIdList = new ArrayList<>(Arrays.asList("123", "tsdb-1"));
+        clusterIdList.add("123");
+        CompletableFuture<WriteResult> future = client.write(database, TestKit.createRecords(10), clusterIdList);
         assertTrue(future.join().isSuccessful());
     }
 

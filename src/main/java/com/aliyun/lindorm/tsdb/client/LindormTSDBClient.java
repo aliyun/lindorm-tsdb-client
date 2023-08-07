@@ -45,9 +45,17 @@ public interface LindormTSDBClient {
 
     CompletableFuture<WriteResult> write(final String database, final List<Record> records);
 
+    CompletableFuture<WriteResult> write(String database, Record record, List<String> clusterIdList);
+
+    CompletableFuture<WriteResult> write(String database, List<Record> records, List<String> clusterIdList);
+
     WriteResult writeSync(final List<Record> records);
 
     WriteResult writeSync(final List<Record> records, final Map<String, String> params);
+
+    WriteResult writeSync(final List<Record> records, final List<String> clusterIdList);
+
+    WriteResult writeSync(List<Record> records, List<String> clusterIdList, Map<String, String> params);
 
     WriteResult writeSync(final String database, final List<Record> records);
 

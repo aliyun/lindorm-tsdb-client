@@ -157,7 +157,7 @@ public class RecordBatchSender implements Runnable {
                     Response<ResponseBody> response = call.execute();
                     completeBatch(recordBatch, call, response, now, retry, codecType);
                 } catch (Exception e) {
-                    failBatch(recordBatch, call, new ClientException(e), now);
+                    failBatch(recordBatch, call, new ClientException(e), now, retry);
                 }
             } catch (Exception e) {
                 LOG.error("Failed to send record batch for {}", recordBatch.getDatabase(), e);
@@ -241,9 +241,19 @@ public class RecordBatchSender implements Runnable {
     }
 
 
-    private void failBatch(RecordBatch batch, Call<ResponseBody> call, Throwable throwable, long now) {
-        LOG.error("Failed to send points.", throwable);
-        batch.done(throwable);
+    private void failBatch(RecordBatch batch, Call<ResponseBody> call, Throwable throwable, long now, boolean retry) {
+        try {
+            LOG.error("Failed to send points, the server may be restarting.", throwable);
+            if (retry && canRetry(batch, now)) {
+                LOG.warn("Got error send points on database {}, retrying ({} attempts left). Error: {}",
+                        batch.getDatabase(), this.retries - batch.attempts() - 1, throwable.getMessage());
+                reenqueueBatch(batch, now);
+            } else {
+                batch.done(new ClientException(throwable.getMessage()));
+            }
+        } catch (Exception e) {
+            batch.done(new ClientException(e));
+        }
     }
 
     private boolean canRetry(RecordBatch batch, long now) {

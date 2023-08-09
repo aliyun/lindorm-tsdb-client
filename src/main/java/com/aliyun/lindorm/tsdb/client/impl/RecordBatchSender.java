@@ -31,6 +31,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -139,8 +140,19 @@ public class RecordBatchSender implements Runnable {
             try {
                 byte[] encodedResult = WriteCodecFactory.encode(recordBatch.getRecords(), codecType);
                 RequestBody requestBody = RequestBody.create(encodedResult, MEDIA_TYPE_STRING);
-                Call<ResponseBody> call = this.service.write(database, codecType.name(),
-                        this.schemaPolicy, requestBody);
+                Call<ResponseBody> call;
+                List<String> clusterIdList = recordBatch.getClusterIdList();
+                if (clusterIdList != null) {
+                    LinkedHashMap<String, String> paramsCluster = new LinkedHashMap<>();
+                    for (String clusterId : clusterIdList) {
+                        paramsCluster.put(new String("clusterIdList"), clusterId);
+                    }
+                    call = this.service.write(database, codecType.name(),
+                            this.schemaPolicy, paramsCluster, requestBody);
+                } else {
+                    call = this.service.write(database, codecType.name(),
+                            this.schemaPolicy, requestBody);
+                }
                 try {
                     Response<ResponseBody> response = call.execute();
                     completeBatch(recordBatch, call, response, now, retry, codecType);

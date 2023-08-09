@@ -61,6 +61,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -223,6 +224,32 @@ public class LindormTSDBClientImpl implements LindormTSDBClient {
     }
 
     @Override
+    public CompletableFuture<WriteResult> write(String database, Record record, List<String> clusterIdList) {
+        Objects.requireNonNull(database);
+        Objects.requireNonNull(record);
+
+        if (clusterIdList == null || clusterIdList.isEmpty()) {
+            return write(database, record);
+        }
+        long nowMs = System.currentTimeMillis();
+        return this.batchProcessor.append(database, record, nowMs, clusterIdList);
+    }
+
+    @Override
+    public CompletableFuture<WriteResult> write(String database, List<Record> records, List<String> clusterIdList) {
+        Objects.requireNonNull(database);
+        if (records == null || records.isEmpty()) {
+            throw new IllegalArgumentException("The records must be not null or empty.");
+        }
+
+        if (clusterIdList == null || clusterIdList.isEmpty()) {
+            return write(database, records);
+        }
+        long nowMs = System.currentTimeMillis();
+        return this.batchProcessor.append(database, records, nowMs, clusterIdList);
+    }
+
+    @Override
     public WriteResult writeSync(List<Record> records) {
         return writeSync(this.defaultDatabase, records, Collections.emptyMap());
     }
@@ -230,6 +257,26 @@ public class LindormTSDBClientImpl implements LindormTSDBClient {
     @Override
     public WriteResult writeSync(List<Record> records, Map<String, String> params) {
         return writeSync(this.defaultDatabase, records, params);
+    }
+
+    @Override
+    public WriteResult writeSync(List<Record> records, List<String> clusterIdList) {
+        //服务端使用LinkedHashMap来解析url参数，多个"clusterIdList=xxx"组装成List<String>结构
+        LinkedHashMap<String, String> paramsCluster = new LinkedHashMap<>();
+        for (String clusterId : clusterIdList) {
+            paramsCluster.put(new String("clusterIdList"), clusterId);
+        }
+        return writeSync(this.defaultDatabase, records, paramsCluster);
+    }
+
+    @Override
+    public WriteResult writeSync(List<Record> records, List<String> clusterIdList, Map<String, String> params) {
+        LinkedHashMap<String, String> paramsCluster = new LinkedHashMap<>();
+        for (String clusterId : clusterIdList) {
+            paramsCluster.put(new String("clusterIdList"), clusterId);
+        }
+        paramsCluster.putAll(params);
+        return writeSync(this.defaultDatabase, records, paramsCluster);
     }
 
     @Override

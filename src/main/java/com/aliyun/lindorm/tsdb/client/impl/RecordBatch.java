@@ -46,8 +46,14 @@ public class RecordBatch {
 
     private boolean done = false;
 
+    private List<String> clusterIdList = new ArrayList<>();
+
     public RecordBatch(String database, int batchSize) {
         this(database, batchSize, System.currentTimeMillis());
+    }
+
+    public RecordBatch(String database, int batchSize, List<String> clusterIdList) {
+        this(database, batchSize, System.currentTimeMillis(), clusterIdList);
     }
 
     RecordBatch(String database, int batchSize, long createdMs) {
@@ -59,6 +65,11 @@ public class RecordBatch {
         this.lastAttemptMs = this.createdMs;
         this.lastAppendTime = this.createdMs;
         this.retry = false;
+    }
+
+    RecordBatch(String database, int batchSize, long createdMs, List<String> clusterIdList) {
+        this(database, batchSize, createdMs);
+        this.clusterIdList = clusterIdList;
     }
 
     public String getDatabase() {
@@ -77,6 +88,14 @@ public class RecordBatch {
         this.records = records;
     }
 
+    public List<String> getClusterIdList() {
+        return clusterIdList;
+    }
+
+    public void setClusterIdList(List<String> clusterIdList) {
+        this.clusterIdList = clusterIdList;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -87,7 +106,8 @@ public class RecordBatch {
         }
         RecordBatch that = (RecordBatch) o;
         return Objects.equals(getDatabase(), that.getDatabase()) &&
-                Objects.equals(getRecords(), that.getRecords());
+                Objects.equals(getRecords(), that.getRecords()) &&
+                Objects.equals(getClusterIdList(), that.getClusterIdList());
     }
 
     @Override
@@ -99,6 +119,7 @@ public class RecordBatch {
     public String toString() {
         return "RecordBatch{" +
                 "database='" + database + '\'' +
+                "clusterIdList='" + clusterIdList + '\'' +
                 ", records=" + records +
                 '}';
     }

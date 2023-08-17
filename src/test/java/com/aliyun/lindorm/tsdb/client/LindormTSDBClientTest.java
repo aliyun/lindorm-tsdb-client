@@ -126,37 +126,46 @@ public class LindormTSDBClientTest {
         // 1.创建客户端实例
         String url = "http://127.0.0.1:3002";
         // LindormTSDBClient线程安全，可以重复使用，无需频繁创建和销毁
-        ClientOptions options = ClientOptions.newBuilder(url).setUsername("tsdb").setPassword("enxU^gPq#gUqEyM").build();
+        ClientOptions options = ClientOptions.newBuilder(url)
+                .setUsername("tsdb")
+                .setPassword("enxU^gPq#gUqEyM")
+                .setMaxRetries(15)
+                .setMaxWaitTimeMs(3000)
+                .setConnectionPool(1000, 10)
+                .build();
         LindormTSDBClient lindormTSDBClient = LindormTSDBFactory.connect(options);
 
-        lindormTSDBClient.execute("drop database if exists demo");
-        lindormTSDBClient.execute("CREATE DATABASE demo");
+        String dbname = "testSDK";
+        String tablename = "sensor";
+
+        lindormTSDBClient.execute(String.format("drop database if exists %s", dbname));
+        lindormTSDBClient.execute(String.format("CREATE DATABASE %s", dbname));
         //lindormTSDBClient.execute("demo","drop table sensor");
         Thread.sleep(1000L);
-        lindormTSDBClient.execute("demo","CREATE TABLE sensor (device_id VARCHAR TAG,region VARCHAR TAG,time BIGINT,temperature DOUBLE,humidity LONG, fielda BIGINT, PRIMARY KEY(device_id))");
+        lindormTSDBClient.execute(dbname, String.format("CREATE TABLE %s (device_id VARCHAR TAG,region VARCHAR TAG,time BIGINT,temperature DOUBLE,humidity LONG, fielda BIGINT, PRIMARY KEY(device_id))", tablename));
 
         // 3.写入数据
-        int numRecords = 10000;
+        int numRecords = 1000;
         List<Record> records = new ArrayList<>(numRecords);
         long currentTime = 1647937300000L;
 
         for (int j = 0; j < 1; j++) {
             for (int i = 0; i < numRecords; i++) {
                 Record record = Record
-                        .table("sensor")
+                        .table(tablename)
                         .time(currentTime + i)
                         .tag("device_id", "F07A")
                         .tag("region", "north-cn")
                         //                        .tag("device_id", "F07A" + String.format("%06d", i))
                         //                        .tag("region", i % 4 == 0 ? "north-cn" : i % 4 == 1 ? "south-cn" : i % 4 == 2 ? "east-cn" : "west-cn")
                         .addField("temperature", 1.0)
-                        .addField("humidity", 10L)
+                        .addField("humidity", 9L)
                         .addField("fielda", 10L)
                         .build();
 
                 records.add(record);
-                if (records.size() % 5000 == 0) {
-                    CompletableFuture<WriteResult> future = lindormTSDBClient.write("demo", records);
+                if (records.size() % 1000 == 0) {
+                    CompletableFuture<WriteResult> future = lindormTSDBClient.write(dbname, records);
 
                     // 处理异步写入结果
                     future.whenComplete((r, ex) -> {
@@ -166,25 +175,32 @@ public class LindormTSDBClientTest {
                             Throwable throwable = ExceptionUtils.getRootCause(ex);
                             if (throwable instanceof LindormTSDBException) {
                                 LindormTSDBException e = (LindormTSDBException) throwable;
-                                System.out.println("Caught an LindormTSDBException, which means your request made it to Lindrom TSDB, "
+                                System.out.println("Caught an LindormTSDBException, which means your request made it to Lindorm TSDB, "
                                         + "but was rejected with an error response for some reason.");
                                 System.out.println("Error Code: " + e.getCode());
                                 System.out.println("SQL State:  " + e.getSqlstate());
                                 System.out.println("Error Message: " + e.getMessage());
-                            }  else {
+                            }  else if (throwable instanceof ClientException) {
+                                System.out.println(throwable.getCause().getMessage());
+                            } else {
                                 throwable.printStackTrace();
                             }
                         } else  {
                             System.out.println("Write successfully.");
                         }
                     });
-                    System.out.println(future.join());
+                    try {
+                        WriteResult write = future.get();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+//                    System.out.println(future.join());
                     records.clear();
                 }
-
             }
+
             if (records.size() > 0) {
-                CompletableFuture<WriteResult> future = lindormTSDBClient.write("demo", records);
+                CompletableFuture<WriteResult> future = lindormTSDBClient.write(dbname, records);
 
                 // 处理异步写入结果
                 future.whenComplete((r, ex) -> {
@@ -194,7 +210,7 @@ public class LindormTSDBClientTest {
                         Throwable throwable = ExceptionUtils.getRootCause(ex);
                         if (throwable instanceof LindormTSDBException) {
                             LindormTSDBException e = (LindormTSDBException) throwable;
-                            System.out.println("Caught an LindormTSDBException, which means your request made it to Lindrom TSDB, "
+                            System.out.println("Caught an LindormTSDBException, which means your request made it to Lindorm TSDB, "
                                     + "but was rejected with an error response for some reason.");
                             System.out.println("Error Code: " + e.getCode());
                             System.out.println("SQL State:  " + e.getSqlstate());
@@ -206,7 +222,9 @@ public class LindormTSDBClientTest {
                         System.out.println("Write successfully.");
                     }
                 });
-                System.out.println(future.join());
+                if (!future.isCompletedExceptionally()) {
+                    System.out.println(future.join());
+                }
                 records.clear();
             }
         }
@@ -217,7 +235,7 @@ public class LindormTSDBClientTest {
 
         // 4.查询数据
         String sql = "select * from sensor limit 10";
-        ResultSet resultSet = lindormTSDBClient.query("demo", sql);
+        ResultSet resultSet = lindormTSDBClient.query(dbname, sql);
 
         try {
             // 处理查询结果

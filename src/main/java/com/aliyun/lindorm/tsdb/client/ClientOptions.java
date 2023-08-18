@@ -42,13 +42,13 @@ public class ClientOptions {
 
     private long maxWaitTimeMs = 300;
 
-    private int keepAliveMs = 30_000;
+    private int keepAliveMs = 300_000;
 
     private int maxIdleConn = 5;
 
     private int batchSize = 500;
 
-    private int maxPointBatches = 32;
+    private int maxPointBatches = -1;
 
     private SchemaPolicy schemaPolicy;
 
@@ -213,13 +213,13 @@ public class ClientOptions {
 
         private long maxWaitTimeMs = 300;
 
-        private int keepAliveMs = 30_000;
+        private int keepAliveMs = 300_000;
 
         private int maxIdleConn = 5;
 
         private int batchSize = 500;
 
-        private int maxPointBatches = 32;
+        private int maxPointBatches = -1;
 
         private SchemaPolicy schemaPolicy = SchemaPolicy.STRONG;
 
@@ -324,7 +324,7 @@ public class ClientOptions {
             options.connectTimeoutMs = connectTimeoutMs;
             options.maxWaitTimeMs = maxWaitTimeMs;
             options.batchSize = batchSize;
-            options.maxPointBatches = maxPointBatches;
+            options.maxPointBatches = (maxPointBatches == -1 ? numBatchThreads * 4 : maxPointBatches);
             options.schemaPolicy = schemaPolicy;
             options.codecType = codecType;
             options.queryChunkSize = queryChunkSize;

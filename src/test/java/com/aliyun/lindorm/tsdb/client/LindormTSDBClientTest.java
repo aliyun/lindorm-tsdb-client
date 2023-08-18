@@ -127,13 +127,11 @@ public class LindormTSDBClientTest {
         String url = "http://127.0.0.1:3002";
         // LindormTSDBClient线程安全，可以重复使用，无需频繁创建和销毁
         ClientOptions options = ClientOptions.newBuilder(url)
-                .setUsername("tsdb")
-                .setPassword("enxU^gPq#gUqEyM")
                 .setMaxRetries(15)
                 .setMaxWaitTimeMs(3000)
-                .setMaxPointBatches(32)
+                //.setMaxPointBatches(32)
                 .setBatchSize(1000)
-                .setNumBatchThreads(16)
+                .setNumBatchThreads(4)
                 .setConnectionPool(30000, 1)
                 .build();
         LindormTSDBClient lindormTSDBClient = LindormTSDBFactory.connect(options);
@@ -148,7 +146,7 @@ public class LindormTSDBClientTest {
         lindormTSDBClient.execute(dbname, String.format("CREATE TABLE %s (device_id VARCHAR TAG,region VARCHAR TAG,time BIGINT,temperature DOUBLE,humidity LONG, fielda BIGINT, PRIMARY KEY(device_id))", tablename));
 
         // 3.写入数据
-        int numRecords = 100000000;
+        int numRecords = 1000;
         List<Record> records = new ArrayList<>(numRecords);
         long currentTime = 1647937300000L;
 
@@ -193,7 +191,7 @@ public class LindormTSDBClientTest {
                         }
                     });
                     try {
-                        //WriteResult write = future.get();
+                        WriteResult write = future.get();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

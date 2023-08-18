@@ -50,7 +50,7 @@ public class BatchProcessor {
 
     private long retryBackOffMs;
 
-    private int maxPointBatches = 32;
+    private int maxPointBatches;
 
     private boolean closed = false;
 

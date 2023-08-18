@@ -29,7 +29,7 @@ public class ClientOptions {
 
     private final String password;
 
-    private int numBatchThreads = 1;
+    private int numBatchThreads = 8;
 
     private long connectTimeoutMs;
 
@@ -42,13 +42,13 @@ public class ClientOptions {
 
     private long maxWaitTimeMs = 300;
 
-    private int keepAliveMs = -1;
+    private int keepAliveMs = 30_000;
 
     private int maxIdleConn = 5;
 
     private int batchSize = 500;
 
-    private int maxPointBatches = 256;
+    private int maxPointBatches = 32;
 
     private SchemaPolicy schemaPolicy;
 
@@ -201,7 +201,7 @@ public class ClientOptions {
 
         private String password;
 
-        private int numBatchThreads = 1;
+        private int numBatchThreads = 8;
 
         private int maxRetries = 3;
 
@@ -213,13 +213,13 @@ public class ClientOptions {
 
         private long maxWaitTimeMs = 300;
 
-        private int keepAliveMs = -1;
+        private int keepAliveMs = 30_000;
 
         private int maxIdleConn = 5;
 
         private int batchSize = 500;
 
-        private int maxPointBatches = 256;
+        private int maxPointBatches = 32;
 
         private SchemaPolicy schemaPolicy = SchemaPolicy.STRONG;
 

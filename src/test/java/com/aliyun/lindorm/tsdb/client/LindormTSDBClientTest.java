@@ -127,11 +127,12 @@ public class LindormTSDBClientTest {
         String url = "http://127.0.0.1:3002";
         // LindormTSDBClient线程安全，可以重复使用，无需频繁创建和销毁
         ClientOptions options = ClientOptions.newBuilder(url)
-                .setUsername("tsdb")
-                .setPassword("enxU^gPq#gUqEyM")
                 .setMaxRetries(15)
                 .setMaxWaitTimeMs(3000)
-                .setConnectionPool(1000, 10)
+                //.setMaxPointBatches(32)
+                .setBatchSize(1000)
+                .setNumBatchThreads(4)
+                .setConnectionPool(30000, 1)
                 .build();
         LindormTSDBClient lindormTSDBClient = LindormTSDBFactory.connect(options);
 

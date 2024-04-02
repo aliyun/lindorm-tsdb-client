@@ -133,8 +133,8 @@ public class Record {
         public Builder tag(String tagName, String tagValue) {
             Objects.requireNonNull(tagName);
             Objects.requireNonNull(tagValue);
-            if (!tagName.isEmpty() && !tagValue.isEmpty()) {
-                this.tags.put(tagName, tagValue);
+            if (!tagName.isEmpty()) {
+                this.tags.put(tagName, tagValue); 
             }
             return this;
         }
